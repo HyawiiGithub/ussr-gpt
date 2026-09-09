@@ -1,0 +1,16 @@
+{
+  "name": "ussr-gpt",
+  "version": "1.0.0",
+  "description": "USSR GPT - gated proxy to muse-spark-1.3-contributor-free via OpenCode Zen. Single-use access codes, 100k tokens per user. Coolify-ready.",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "codes": "node scripts/list-codes.js",
+    "gen-codes": "node scripts/generate-codes.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}
