@@ -63,6 +63,7 @@ function extractText(j) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -77,6 +78,17 @@ app.use((req, res, next) => {
 });
 
 app.get('/api/health', (req, res) => res.json({ ok: true, budget: TOKEN_BUDGET }));
+
+// No secrets here: proves the request reached THIS app and shows if codes/key loaded.
+app.get('/api/debug', (req, res) => res.json({
+  ok: true,
+  app: 'ussr-gpt',
+  codesLoaded: Object.keys(db.codes).length,
+  sessions: Object.keys(db.users).length,
+  hasGatewayKey: !!GATEWAY_KEY,
+  budget: TOKEN_BUDGET,
+  now: new Date().toISOString()
+}));
 
 app.post('/api/redeem', (req, res) => {
   const code = String(req.body?.code || '').trim().toUpperCase();
@@ -138,5 +150,8 @@ app.post('/api/chat', async (req, res) => {
   u.tokens_used += total; saveDB(db);
   res.json({ reply, tokens_used: u.tokens_used, remaining: Math.max(0, u.budget - u.tokens_used) });
 });
+
+// JSON 404 for unknown API routes (so proxies/misroutes are distinguishable from app errors)
+app.use('/api', (req, res) => res.status(404).json({ error: 'Unknown API route.' }));
 
 app.listen(PORT, '0.0.0.0', () => console.log(`USSR GPT on :${PORT} | budget=${TOKEN_BUDGET} | codes=${Object.keys(db.codes).length}`));
